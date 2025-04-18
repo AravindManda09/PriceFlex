@@ -58,31 +58,31 @@
 
 <!-- Competitors List -->
 <div class="row">
-    {% for competitor in competitors %}
+    {% for safe_comp in safe_competitors %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">{{ competitor.name }}</h5>
-                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#competitor{{ competitor.id }}Details">
+                <h5 class="card-title mb-0">{{ safe_comp.name }}</h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#competitor{{ safe_comp.id }}Details">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </div>
             <div class="card-body">
-                {% if competitor.website %}
+                {% if safe_comp.website %}
                 <div class="mb-3">
                     <small class="text-muted">Website:</small>
-                    <a href="{{ competitor.website }}" target="_blank" class="ms-1">{{ competitor.website }}</a>
+                    <a href="{{ safe_comp.website }}" target="_blank" class="ms-1">{{ safe_comp.website }}</a>
                 </div>
                 {% endif %}
                 
-                {% if competitor.notes %}
+                {% if safe_comp.notes %}
                 <div class="mb-3">
                     <small class="text-muted">Notes:</small>
-                    <p class="mb-0 mt-1">{{ competitor.notes }}</p>
+                    <p class="mb-0 mt-1">{{ safe_comp.notes }}</p>
                 </div>
                 {% endif %}
                 
-                <div class="collapse mt-3" id="competitor{{ competitor.id }}Details">
+                <div class="collapse mt-3" id="competitor{{ safe_comp.id }}Details">
                     <h6 class="mb-3">Product Prices</h6>
                     <div class="table-responsive">
                         <table class="table table-sm table-hover data-table">
@@ -94,24 +94,26 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for price in competitor.prices|sort(attribute='date_recorded', reverse=True) %}
+                                {% if safe_comp.prices %}
+                                {% for price in safe_comp.prices %}
                                 <tr>
-                                    <td>{{ price.product.name }}</td>
+                                    <td>{{ price.product_name }}</td>
                                     <td>${{ price.price }}</td>
                                     <td>{{ price.date_recorded.strftime('%Y-%m-%d') }}</td>
                                 </tr>
+                                {% endfor %}
                                 {% else %}
                                 <tr>
                                     <td colspan="3" class="text-center py-3">No prices recorded yet</td>
                                 </tr>
-                                {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
             <div class="card-footer">
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPriceModal{{ competitor.id }}">
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPriceModal{{ safe_comp.id }}">
                     <i class="fas fa-plus me-1"></i> Add Price
                 </button>
             </div>
@@ -119,18 +121,18 @@
     </div>
     
     <!-- Add Price Modal for this competitor -->
-    <div class="modal fade" id="addPriceModal{{ competitor.id }}" tabindex="-1" aria-labelledby="addPriceModalLabel{{ competitor.id }}" aria-hidden="true">
+    <div class="modal fade" id="addPriceModal{{ safe_comp.id }}" tabindex="-1" aria-labelledby="addPriceModalLabel{{ safe_comp.id }}" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addPriceModalLabel{{ competitor.id }}">Add {{ competitor.name }} Price</h5>
+                    <h5 class="modal-title" id="addPriceModalLabel{{ safe_comp.id }}">Add {{ safe_comp.name }} Price</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="{{ url_for('add_competitor_price', competitor_id=competitor.id) }}">
+                    <form method="post" action="{{ url_for('add_competitor_price', competitor_id=safe_comp.id) }}">
                         <div class="mb-3">
-                            <label for="product_id{{ competitor.id }}" class="form-label">Product</label>
-                            <select class="form-select" id="product_id{{ competitor.id }}" name="product_id" required>
+                            <label for="product_id{{ safe_comp.id }}" class="form-label">Product</label>
+                            <select class="form-select" id="product_id{{ safe_comp.id }}" name="product_id" required>
                                 <option value="" selected disabled>Select a product</option>
                                 {% for product in current_user.products %}
                                 <option value="{{ product.id }}">{{ product.name }}</option>
@@ -139,8 +141,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="price{{ competitor.id }}" class="form-label">Price ($)</label>
-                            <input type="number" class="form-control" id="price{{ competitor.id }}" name="price" step="0.01" min="0" required>
+                            <label for="price{{ safe_comp.id }}" class="form-label">Price ($)</label>
+                            <input type="number" class="form-control" id="price{{ safe_comp.id }}" name="price" step="0.01" min="0" required>
                         </div>
                         
                         <div class="d-flex justify-content-end">

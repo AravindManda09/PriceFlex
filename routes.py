@@ -316,10 +316,48 @@ def register_routes(app):
     @login_required
     def competitors():
         try:
+            # Get competitors with no related data to avoid potential errors
             competitors = Competitor.query.filter_by(user_id=current_user.id).all()
+            
+            # Create a safe version of competitors with reduced data
+            safe_competitors = []
+            for comp in competitors:
+                try:
+                    # Safely get prices, handling any potential errors
+                    prices = []
+                    try:
+                        raw_prices = comp.prices.all()
+                        for price in raw_prices:
+                            try:
+                                product_name = price.product.name if price.product else "Unknown Product"
+                                prices.append({
+                                    'id': price.id,
+                                    'price': price.price,
+                                    'date_recorded': price.date_recorded,
+                                    'product_name': product_name
+                                })
+                            except Exception as price_error:
+                                app.logger.error(f"Error processing price {price.id}: {str(price_error)}")
+                    except Exception as prices_error:
+                        app.logger.error(f"Error retrieving prices for competitor {comp.id}: {str(prices_error)}")
+                    
+                    # Create a clean competitor object
+                    safe_comp = {
+                        'id': comp.id,
+                        'name': comp.name,
+                        'website': comp.website,
+                        'notes': comp.notes,
+                        'prices': prices
+                    }
+                    safe_competitors.append(safe_comp)
+                except Exception as comp_error:
+                    app.logger.error(f"Error processing competitor {comp.id}: {str(comp_error)}")
+            
             # Log competitors data for debugging
-            app.logger.debug(f"Retrieved {len(competitors)} competitors for user {current_user.id}")
-            return render_template('competitors.html', competitors=competitors)
+            app.logger.debug(f"Retrieved and safely processed {len(safe_competitors)} competitors for user {current_user.id}")
+            
+            # Pass the safe data to the template
+            return render_template('competitors.html', competitors=competitors, safe_competitors=safe_competitors)
         except Exception as e:
             app.logger.error(f"Error in competitors route: {str(e)}")
             # Return a simplified error template to avoid cascading errors
