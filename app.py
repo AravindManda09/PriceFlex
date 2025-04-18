@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -38,6 +39,14 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Add custom Jinja2 filters
+@app.template_filter('fromjson')
+def fromjson_filter(value):
+    try:
+        return json.loads(value)
+    except:
+        return {}
 
 with app.app_context():
     # Import the models here
