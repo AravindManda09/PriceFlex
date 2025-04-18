@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Settings</h1>
+    <p class="text-muted">Manage your account and application preferences</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <!-- Account Settings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Account Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('update_settings') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" value="{{ current_user.username }}" disabled>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" value="{{ current_user.email }}" disabled>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Company Name</label>
+                        <input type="text" class="form-control" id="company_name" name="company_name" value="{{ current_user.company_name }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="business_type" class="form-label">Business Type</label>
+                        <select class="form-select" id="business_type" name="business_type">
+                            <option value="retail" {{ 'selected' if current_user.business_type == 'retail' else '' }}>Retail</option>
+                            <option value="ecommerce" {{ 'selected' if current_user.business_type == 'ecommerce' else '' }}>E-commerce</option>
+                            <option value="wholesale" {{ 'selected' if current_user.business_type == 'wholesale' else '' }}>Wholesale</option>
+                            <option value="manufacturing" {{ 'selected' if current_user.business_type == 'manufacturing' else '' }}>Manufacturing</option>
+                            <option value="services" {{ 'selected' if current_user.business_type == 'services' else '' }}>Services</option>
+                            <option value="other" {{ 'selected' if current_user.business_type == 'other' else '' }}>Other</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <!-- Change Password -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('change_password') }}">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Data Management -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Data Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Export Data</h6>
+                    <p class="text-muted small">Download your product and pricing data as CSV files.</p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" disabled>
+                            <i class="fas fa-download me-1"></i> Products
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" disabled>
+                            <i class="fas fa-download me-1"></i> Sales
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" disabled>
+                            <i class="fas fa-download me-1"></i> Recommendations
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <h6>Data Privacy</h6>
+                    <p class="text-muted small">Your data is securely stored and used only to provide pricing recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

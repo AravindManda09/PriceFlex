@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">{{ product.name }}</h1>
+        <p class="text-muted">{{ product.category }}</p>
+    </div>
+    <div>
+        <a href="{{ url_for('products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Products
+        </a>
+    </div>
+</div>
+
+<!-- Product Overview Card -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Product Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Current Price</label>
+                    <div class="product-price">${{ product.current_price }}</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Cost Price</label>
+                    <div>${{ product.cost_price }}</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Margin</label>
+                    <div>{{ ((product.current_price - product.cost_price) / product.current_price * 100)|round(2) }}%</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Stock Level</label>
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">{{ product.stock_level }}</div>
+                        <div class="badge {{ 'bg-success' if product.stock_level > 10 else 'bg-warning' if product.stock_level > 0 else 'bg-danger' }}">
+                            {{ 'In Stock' if product.stock_level > 0 else 'Out of Stock' }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if product.description %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description</label>
+                    <p>{{ product.description }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Price Constraints</label>
+                    <div>
+                        <span class="text-muted">Min:</span> 
+                        <span>{{ '$' + product.minimum_price|string if product.minimum_price else 'Not set' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-muted">Max:</span> 
+                        <span>{{ '$' + product.maximum_price|string if product.maximum_price else 'Not set' }}</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addSaleModal">
+                        <i class="fas fa-plus me-1"></i> Add Sale
+                    </button>
+                    <form action="{{ url_for('generate_recommendation', product_id=product.id) }}" method="post">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-magic me-1"></i> Generate Price Recommendation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Price Analytics</h5>
+            </div>
+            <div class="card-body">
+                <div id="productCharts" data-product-id="{{ product.id }}">
+                    <div class="chart-container mb-4">
+                        <canvas id="priceHistoryChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations and Additional Data -->
+<div class="row">
+    <!-- Recommendations -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Price Recommendations</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for rec in recommendations %}
+                    {% set price_diff = rec.recommended_price - rec.current_price %}
+                    {% set is_increase = price_diff > 0 %}
+                    {% set is_decrease = price_diff < 0 %}
+                    {% set class_suffix = 'increase' if is_increase else 'decrease' if is_decrease else 'neutral' %}
+                    
+                    <div class="list-group-item recommendation-item recommendation-{{ class_suffix }} {{ 'recommendation-rejected' if rec.status == 'rejected' }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-{{ 'success' if is_increase else 'danger' if is_decrease else 'secondary' }}">
+                                    {{ 'Increase' if is_increase else 'Decrease' if is_decrease else 'No Change' }}
+                                </span>
+                                <small class="ms-2 text-muted">{{ rec.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            {% if rec.status == 'accepted' %}
+                            <span class="badge bg-success">Applied</span>
+                            {% elif rec.status == 'rejected' %}
+                            <span class="badge bg-secondary">Rejected</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <div>
+                                <small class="text-muted">From:</small>
+                                <span class="ms-1">${{ rec.current_price }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">To:</small>
+                                <span class="ms-1 price-change {{ 'price-increase' if is_increase else 'price-decrease' if is_decrease else '' }}">${{ rec.recommended_price }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Impact:</small>
+                                <span class="ms-1 {{ 'text-success' if rec.potential_revenue_increase > 0 else 'text-danger' }}">
+                                    ${{ rec.potential_revenue_increase|abs|round(2) }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <p class="recommendation-rationale mb-2">{{ rec.rationale }}</p>
+                        
+                        {% if rec.factors %}
+                        <div class="mb-2">
+                            <small class="text-muted">Factors:</small>
+                            {% set factors = rec.factors|fromjson %}
+                            {% for factor, influence in factors.items() %}
+                            <div class="d-inline-block me-3">
+                                <span class="factor-influence influence-{{ 'positive' if influence > 0 else 'negative' if influence < 0 else 'neutral' }}-{{ influence|abs }}"></span>
+                                <small>{{ factor|replace('_', ' ')|title }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if rec.status == 'pending' %}
+                        <div class="d-flex justify-content-end mt-1">
+                            <button class="btn btn-sm btn-success me-2 apply-recommendation" 
+                                    data-recommendation-id="{{ rec.id }}" 
+                                    data-recommended-price="{{ rec.recommended_price }}">
+                                Apply
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary reject-recommendation">Ignore</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="list-group-item text-center py-4">
+                        <p class="text-muted mb-2">No recommendations yet</p>
+                        <form action="{{ url_for('generate_recommendation', product_id=product.id) }}" method="post">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-magic me-1"></i> Generate Recommendation
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Price History and Sales Tables -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="price-history-tab" data-bs-toggle="tab" data-bs-target="#price-history" type="button" role="tab" aria-controls="price-history" aria-selected="true">Price History</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales" type="button" role="tab" aria-controls="sales" aria-selected="false">Sales</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="competitors-tab" data-bs-toggle="tab" data-bs-target="#competitors" type="button" role="tab" aria-controls="competitors" aria-selected="false">Competitors</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-0">
+                <div class="tab-content" id="productTabContent">
+                    <!-- Price History Tab -->
+                    <div class="tab-pane fade show active" id="price-history" role="tabpanel" aria-labelledby="price-history-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover data-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Price</th>
+                                        <th>Change</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ph in price_history|sort(attribute='date_changed', reverse=True) %}
+                                    <tr>
+                                        <td>{{ ph.date_changed.strftime('%Y-%m-%d') }}</td>
+                                        <td>${{ ph.price }}</td>
+                                        <td>
+                                            {% if not loop.last %}
+                                            {% set prev_price = price_history[loop.index].price %}
+                                            {% set diff = ph.price - prev_price %}
+                                            {% if diff > 0 %}
+                                            <span class="text-success">+${{ diff|round(2) }}</span>
+                                            {% elif diff < 0 %}
+                                            <span class="text-danger">-${{ diff|abs|round(2) }}</span>
+                                            {% else %}
+                                            <span class="text-muted">No change</span>
+                                            {% endif %}
+                                            {% else %}
+                                            <span class="text-muted">Initial price</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-3">No price history available</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Sales Tab -->
+                    <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+                        <div class="d-flex justify-content-end p-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addSaleModal">
+                                <i class="fas fa-plus me-1"></i> Add Sale
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover data-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sale in sales|sort(attribute='sale_date', reverse=True) %}
+                                    <tr>
+                                        <td>{{ sale.sale_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ sale.quantity }}</td>
+                                        <td>${{ sale.price }}</td>
+                                        <td>${{ sale.revenue|round(2) }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-3">No sales recorded yet</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Competitors Tab -->
+                    <div class="tab-pane fade" id="competitors" role="tabpanel" aria-labelledby="competitors-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover data-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Competitor</th>
+                                        <th>Price</th>
+                                        <th>Difference</th>
+                                        <th>Date Recorded</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cp in competitor_prices|sort(attribute='date_recorded', reverse=True) %}
+                                    <tr>
+                                        <td>{{ cp.competitor.name }}</td>
+                                        <td>${{ cp.price }}</td>
+                                        <td>
+                                            {% set diff = product.current_price - cp.price %}
+                                            {% if diff > 0 %}
+                                            <span class="text-danger">+${{ diff|round(2) }} higher</span>
+                                            {% elif diff < 0 %}
+                                            <span class="text-success">-${{ diff|abs|round(2) }} lower</span>
+                                            {% else %}
+                                            <span class="text-muted">Same price</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ cp.date_recorded.strftime('%Y-%m-%d') }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-3">No competitor prices recorded</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Sale Modal -->
+<div class="modal fade" id="addSaleModal" tabindex="-1" aria-labelledby="addSaleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSaleModalLabel">Add Sale Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="saleForm" method="post" action="{{ url_for('add_sale', product_id=product.id) }}" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid quantity.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Sale Price ($)</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="{{ product.current_price }}" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid price.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sale_date" class="form-label">Sale Date</label>
+                        <input type="date" class="form-control" id="sale_date" name="sale_date" value="{{ now().strftime('%Y-%m-%d') }}">
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Sale</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Price Modal -->
+<div class="modal fade" id="updatePriceModal" tabindex="-1" aria-labelledby="updatePriceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updatePriceModalLabel">Update Product Price</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{ url_for('update_price', product_id=product.id) }}">
+                    <div class="mb-3">
+                        <label for="new_price" class="form-label">New Price ($)</label>
+                        <input type="number" class="form-control" id="new_price" name="new_price" step="0.01" min="0" required>
+                    </div>
+                    
+                    <input type="hidden" id="recommendation_id" name="recommendation_id">
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        This will update the product's price immediately. Are you sure?
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Price</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/products.js') }}"></script>
+{% endblock %}

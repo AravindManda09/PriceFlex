@@ -1,0 +1,193 @@
+/* Custom CSS styles to complement Bootstrap */
+
+/* Dashboard cards */
+.stat-card {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.stat-card .card-body {
+    padding: 1.5rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--bs-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.2;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+/* Recommendation cards */
+.recommendation-item {
+    border-left: 4px solid var(--bs-primary);
+    transition: background-color 0.2s;
+}
+
+.recommendation-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.recommendation-increase {
+    border-left-color: var(--bs-success);
+}
+
+.recommendation-decrease {
+    border-left-color: var(--bs-danger);
+}
+
+.recommendation-neutral {
+    border-left-color: var(--bs-secondary);
+}
+
+.recommendation-rejected {
+    opacity: 0.6;
+    border-left-color: var(--bs-secondary);
+}
+
+.price-change {
+    font-weight: 700;
+}
+
+.price-increase {
+    color: var(--bs-success);
+}
+
+.price-decrease {
+    color: var(--bs-danger);
+}
+
+.recommendation-rationale {
+    font-size: 0.875rem;
+    color: var(--bs-secondary);
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1.5rem;
+}
+
+.mini-chart-container {
+    position: relative;
+    height: 150px;
+}
+
+/* Data table styles */
+.data-table th {
+    background-color: rgba(0, 0, 0, 0.03);
+    font-weight: 600;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Product cards */
+.product-card {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+}
+
+.product-card .card-body {
+    padding: 1.5rem;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.product-meta {
+    font-size: 0.85rem;
+    color: var(--bs-secondary);
+}
+
+/* Form customizations */
+.form-label {
+    font-weight: 600;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Factor influence indicators */
+.factor-influence {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+    background-color: var(--bs-secondary);
+}
+
+.influence-positive-1 {
+    background-color: rgba(40, 167, 69, 0.5);
+}
+
+.influence-positive-2 {
+    background-color: rgba(40, 167, 69, 1);
+}
+
+.influence-negative-1 {
+    background-color: rgba(220, 53, 69, 0.5);
+}
+
+.influence-negative-2 {
+    background-color: rgba(220, 53, 69, 1);
+}
+
+.influence-neutral {
+    background-color: rgba(108, 117, 125, 0.5);
+}
+
+/* Sidebar active state */
+.nav-link.active {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: var(--bs-primary);
+    font-weight: 600;
+    border-radius: 0.25rem;
+}
+
+/* Page headers */
+.page-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+.page-title {
+    margin-bottom: 0.5rem;
+}

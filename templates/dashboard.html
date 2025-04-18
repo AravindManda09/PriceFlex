@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="text-muted">Overview of your pricing performance</p>
+    </div>
+    <div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm btn-outline-secondary date-range-selector active" data-days="30">30 Days</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary date-range-selector" data-days="60">60 Days</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary date-range-selector" data-days="90">90 Days</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card text-primary mb-3">
+            <div class="card-body">
+                <i class="fas fa-box stat-icon"></i>
+                <div class="stat-value">{{ product_count }}</div>
+                <div class="stat-label">Products</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-success mb-3">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign stat-icon"></i>
+                <div class="stat-value">${{ total_revenue|round(2) }}</div>
+                <div class="stat-label">Revenue (30d)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-info mb-3">
+            <div class="card-body">
+                <i class="fas fa-tags stat-icon"></i>
+                <div class="stat-value">${{ avg_price|round(2) }}</div>
+                <div class="stat-label">Avg Price</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-warning mb-3">
+            <div class="card-body">
+                <i class="fas fa-lightbulb stat-icon"></i>
+                <div class="stat-value">{{ recommendation_count }}</div>
+                <div class="stat-label">Recommendations</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main dashboard content -->
+<div class="row">
+    <!-- Sales chart -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Sales Revenue</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="salesChart" data-sales="{{ daily_sales|tojson }}"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommendations distribution -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Price Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="recommendationsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent recommendations and products cards -->
+<div class="row">
+    <!-- Recent recommendations -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Recommendations</h5>
+                <a href="{{ url_for('products') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for rec in recommendations %}
+                    {% set product = rec.product %}
+                    {% set price_diff = rec.recommended_price - rec.current_price %}
+                    {% set is_increase = price_diff > 0 %}
+                    {% set is_decrease = price_diff < 0 %}
+                    {% set class_suffix = 'increase' if is_increase else 'decrease' if is_decrease else 'neutral' %}
+                    
+                    <div class="list-group-item recommendation-item recommendation-{{ class_suffix }}" 
+                         data-current-price="{{ rec.current_price }}" 
+                         data-recommended-price="{{ rec.recommended_price }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{{ product.name }}</h6>
+                            <span class="badge bg-{{ 'success' if is_increase else 'danger' if is_decrease else 'secondary' }}">
+                                {{ 'Increase' if is_increase else 'Decrease' if is_decrease else 'No Change' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <div>
+                                <small class="text-muted">Current:</small>
+                                <span class="ms-1">${{ rec.current_price }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Recommended:</small>
+                                <span class="ms-1 price-change {{ 'price-increase' if is_increase else 'price-decrease' if is_decrease else '' }}">${{ rec.recommended_price }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Impact:</small>
+                                <span class="ms-1 {{ 'text-success' if rec.potential_revenue_increase > 0 else 'text-danger' }}">
+                                    ${{ rec.potential_revenue_increase|abs|round(2) }}
+                                </span>
+                            </div>
+                        </div>
+                        <p class="recommendation-rationale mb-2">{{ rec.rationale }}</p>
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-sm btn-link">Details</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item">
+                        <p class="text-muted text-center my-3">No recommendations yet. Add products and sales data to generate recommendations.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products list -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Your Products</h5>
+                <a href="{{ url_for('add_product') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add Product
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for product in products[:5] %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ product.name }}</h6>
+                                <small class="text-muted">{{ product.category }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="product-price">${{ product.current_price }}</div>
+                                <small class="text-muted">Stock: {{ product.stock_level }}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-sm btn-outline-primary">Details</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item">
+                        <p class="text-muted text-center my-3">No products added yet. Add products to start optimizing prices.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('products') }}" class="btn btn-sm btn-outline-secondary">View All Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
