@@ -187,11 +187,11 @@ class PriceOptimizer:
             
         # Round to sensible price point (e.g., $19.99 instead of $20.01)
         if recommended_price >= 100:
-            recommended_price = np.floor(recommended_price) - 0.01
+            recommended_price = float(np.floor(recommended_price)) - 0.01
         elif recommended_price >= 10:
-            recommended_price = np.floor(recommended_price * 2) / 2 - 0.01
+            recommended_price = float(np.floor(recommended_price * 2) / 2) - 0.01
         else:
-            recommended_price = np.floor(recommended_price * 4) / 4 - 0.01
+            recommended_price = float(np.floor(recommended_price * 4) / 4) - 0.01
         
         # Don't recommend tiny changes
         if abs(recommended_price - current_price) < (current_price * 0.01):
@@ -218,11 +218,12 @@ class PriceOptimizer:
                 rationale.append(f"This price optimizes for long-term market position despite a potential short-term revenue decrease")
         
         # Generate recommendation object
+        # Ensure all values are Python native types (not NumPy)
         recommendation = {
-            'product_id': product.id,
-            'current_price': current_price,
-            'recommended_price': round(recommended_price, 2),
-            'potential_revenue_increase': round(potential_revenue, 2),
+            'product_id': int(product.id),
+            'current_price': float(current_price),
+            'recommended_price': float(round(recommended_price, 2)),
+            'potential_revenue_increase': float(round(potential_revenue, 2)),
             'rationale': '. '.join(rationale),
             'factors': json.dumps(factors_influence)
         }
