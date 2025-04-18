@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+import sys
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +10,12 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager
 
 
-logging.basicConfig(level=logging.DEBUG)
+# Set up detailed logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
 
 class Base(DeclarativeBase):
     pass
