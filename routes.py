@@ -315,8 +315,16 @@ def register_routes(app):
     @app.route('/competitors')
     @login_required
     def competitors():
-        competitors = Competitor.query.filter_by(user_id=current_user.id).all()
-        return render_template('competitors.html', competitors=competitors)
+        try:
+            competitors = Competitor.query.filter_by(user_id=current_user.id).all()
+            # Log competitors data for debugging
+            app.logger.debug(f"Retrieved {len(competitors)} competitors for user {current_user.id}")
+            return render_template('competitors.html', competitors=competitors)
+        except Exception as e:
+            app.logger.error(f"Error in competitors route: {str(e)}")
+            # Return a simplified error template to avoid cascading errors
+            return render_template('base.html', 
+                                  error_message="There was an error loading the competitors page. Please try again.")
     
     @app.route('/competitors/add', methods=['GET', 'POST'])
     @login_required

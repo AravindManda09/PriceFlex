@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Debug information, will remove after fixing the issue -->
+<div class="d-none">
+    <p>Debug Info: Number of competitors: {{ competitors|length }}</p>
+</div>
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
         <h1 class="page-title">Competitors</h1>
