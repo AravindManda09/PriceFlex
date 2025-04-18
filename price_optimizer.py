@@ -186,6 +186,8 @@ class PriceOptimizer:
             rationale.append(f"Price adjusted to respect your maximum price threshold (${product.maximum_price:.2f})")
             
         # Round to sensible price point (e.g., $19.99 instead of $20.01)
+        # Use float() to ensure numpy.float64 is converted to Python float
+        recommended_price = float(recommended_price)
         if recommended_price >= 100:
             recommended_price = float(np.floor(recommended_price)) - 0.01
         elif recommended_price >= 10:
@@ -202,15 +204,15 @@ class PriceOptimizer:
         potential_revenue = 0
         if features['sales_velocity'] > 0 and 'price_elasticity' in features:
             # Use price elasticity to estimate new sales volume
-            price_change_ratio = recommended_price / current_price
+            price_change_ratio = float(recommended_price) / float(current_price)
             # Elasticity formula: % change in quantity = elasticity * % change in price
-            quantity_change_ratio = 1 + (features['price_elasticity'] * (price_change_ratio - 1))
-            new_velocity = features['sales_velocity'] * quantity_change_ratio
+            quantity_change_ratio = 1 + (float(features['price_elasticity']) * (price_change_ratio - 1))
+            new_velocity = float(features['sales_velocity']) * quantity_change_ratio
             
             # Calculate monthly revenue difference
-            current_monthly_revenue = features['sales_velocity'] * 30 * current_price
-            new_monthly_revenue = new_velocity * 30 * recommended_price
-            potential_revenue = new_monthly_revenue - current_monthly_revenue
+            current_monthly_revenue = float(features['sales_velocity']) * 30 * float(current_price)
+            new_monthly_revenue = float(new_velocity) * 30 * float(recommended_price)
+            potential_revenue = float(new_monthly_revenue - current_monthly_revenue)
             
             if potential_revenue > 0:
                 rationale.append(f"This change could increase monthly revenue by approximately ${potential_revenue:.2f}")
@@ -218,12 +220,13 @@ class PriceOptimizer:
                 rationale.append(f"This price optimizes for long-term market position despite a potential short-term revenue decrease")
         
         # Generate recommendation object
-        # Ensure all values are Python native types (not NumPy)
+        # Convert all NumPy values to Python native types to avoid JSON serialization issues
+        # Ensure all numeric values are converted to Python native types (not NumPy types)
         recommendation = {
             'product_id': int(product.id),
             'current_price': float(current_price),
-            'recommended_price': float(round(recommended_price, 2)),
-            'potential_revenue_increase': float(round(potential_revenue, 2)),
+            'recommended_price': float(round(float(recommended_price), 2)),
+            'potential_revenue_increase': float(round(float(potential_revenue), 2)),
             'rationale': '. '.join(rationale),
             'factors': json.dumps(factors_influence)
         }
