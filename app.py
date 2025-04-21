@@ -54,6 +54,14 @@ def fromjson_filter(value):
     except:
         return {}
 
+@app.template_filter('tojson')
+def tojson_filter(value):
+    try:
+        return json.dumps(value)
+    except Exception as e:
+        app.logger.error(f"Error in tojson filter: {str(e)}")
+        return '[]'
+
 with app.app_context():
     # Import the models here
     import models
