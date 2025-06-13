@@ -58,7 +58,7 @@ function initDashboardCharts() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `Revenue: $${context.raw.toFixed(2)}`;
+                                return `Revenue: ₹${context.raw.toFixed(2)}`;
                             }
                         }
                     }
@@ -76,7 +76,7 @@ function initDashboardCharts() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return '₹' + value;
                             }
                         }
                     }

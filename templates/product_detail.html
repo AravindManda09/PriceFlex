@@ -23,12 +23,12 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Current Price</label>
-                    <div class="product-price">${{ product.current_price }}</div>
+                    <div class="product-price">{{ '₹' + product.current_price|string }}</div>
                 </div>
                 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Cost Price</label>
-                    <div>${{ product.cost_price }}</div>
+                    <div>{{ '₹' + product.cost_price|string }}</div>
                 </div>
                 
                 <div class="mb-3">
@@ -57,11 +57,11 @@
                     <label class="form-label fw-bold">Price Constraints</label>
                     <div>
                         <span class="text-muted">Min:</span> 
-                        <span>{{ '$' + product.minimum_price|string if product.minimum_price else 'Not set' }}</span>
+                        <span>{{ '₹' + product.minimum_price|string if product.minimum_price else 'Not set' }}</span>
                     </div>
                     <div>
                         <span class="text-muted">Max:</span> 
-                        <span>{{ '$' + product.maximum_price|string if product.maximum_price else 'Not set' }}</span>
+                        <span>{{ '₹' + product.maximum_price|string if product.maximum_price else 'Not set' }}</span>
                     </div>
                 </div>
                 
@@ -135,16 +135,16 @@
                         <div class="d-flex justify-content-between mb-2">
                             <div>
                                 <small class="text-muted">From:</small>
-                                <span class="ms-1">${{ rec.current_price }}</span>
+                                <span class="ms-1">{{ '₹' + rec.current_price|string }}</span>
                             </div>
                             <div>
                                 <small class="text-muted">To:</small>
-                                <span class="ms-1 price-change {{ 'price-increase' if is_increase else 'price-decrease' if is_decrease else '' }}">${{ rec.recommended_price }}</span>
+                                <span class="ms-1 price-change {{ 'price-increase' if is_increase else 'price-decrease' if is_decrease else '' }}">{{ '₹' + rec.recommended_price|string }}</span>
                             </div>
                             <div>
                                 <small class="text-muted">Impact:</small>
                                 <span class="ms-1 {{ 'text-success' if rec.potential_revenue_increase > 0 else 'text-danger' }}">
-                                    ${{ rec.potential_revenue_increase|abs|round(2) }}
+                                    {{ '₹' + rec.potential_revenue_increase|abs|round(2)|string }}
                                 </span>
                             </div>
                         </div>
@@ -223,15 +223,15 @@
                                     {% for ph in price_history|sort(attribute='date_changed', reverse=True) %}
                                     <tr>
                                         <td>{{ ph.date_changed.strftime('%Y-%m-%d') }}</td>
-                                        <td>${{ ph.price }}</td>
+                                        <td>{{ '₹' + ph.price|string }}</td>
                                         <td>
                                             {% if not loop.last %}
                                             {% set prev_price = price_history[loop.index].price %}
                                             {% set diff = ph.price - prev_price %}
                                             {% if diff > 0 %}
-                                            <span class="text-success">+${{ diff|round(2) }}</span>
+                                            <span class="text-success">+{{ '₹' + diff|round(2)|string }}</span>
                                             {% elif diff < 0 %}
-                                            <span class="text-danger">-${{ diff|abs|round(2) }}</span>
+                                            <span class="text-danger">-{{ '₹' + diff|abs|round(2)|string }}</span>
                                             {% else %}
                                             <span class="text-muted">No change</span>
                                             {% endif %}
@@ -272,12 +272,12 @@
                                     <tr>
                                         <td>{{ sale.sale_date.strftime('%Y-%m-%d') }}</td>
                                         <td>{{ sale.quantity }}</td>
-                                        <td>${{ sale.price }}</td>
-                                        <td>${{ sale.revenue|round(2) }}</td>
+                                        <td>{{ '₹' + sale.price|string }}</td>
+                                        <td>{{ '₹' + (sale.quantity * sale.price)|string }}</td>
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center py-3">No sales recorded yet</td>
+                                        <td colspan="4" class="text-center py-3">No sales data available</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -293,30 +293,13 @@
                                     <tr>
                                         <th>Competitor</th>
                                         <th>Price</th>
-                                        <th>Difference</th>
-                                        <th>Date Recorded</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for cp in competitor_prices|sort(attribute='date_recorded', reverse=True) %}
+                                    {% for competitor in competitors %}
                                     <tr>
-                                        <td>{{ cp.competitor.name }}</td>
-                                        <td>${{ cp.price }}</td>
-                                        <td>
-                                            {% set diff = product.current_price - cp.price %}
-                                            {% if diff > 0 %}
-                                            <span class="text-danger">+${{ diff|round(2) }} higher</span>
-                                            {% elif diff < 0 %}
-                                            <span class="text-success">-${{ diff|abs|round(2) }} lower</span>
-                                            {% else %}
-                                            <span class="text-muted">Same price</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ cp.date_recorded.strftime('%Y-%m-%d') }}</td>
-                                    </tr>
-                                    {% else %}
-                                    <tr>
-                                        <td colspan="4" class="text-center py-3">No competitor prices recorded</td>
+                                        <td>{{ competitor.name }}</td>
+                                        <td>{{ '₹' + competitor.price|string }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -348,7 +331,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="price" class="form-label">Sale Price ($)</label>
+                        <label for="price" class="form-label">Sale Price (₹)</label>
                         <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="{{ product.current_price }}" required>
                         <div class="invalid-feedback">
                             Please enter a valid price.
@@ -381,7 +364,7 @@
             <div class="modal-body">
                 <form method="post" action="{{ url_for('update_price', product_id=product.id) }}">
                     <div class="mb-3">
-                        <label for="new_price" class="form-label">New Price ($)</label>
+                        <label for="new_price" class="form-label">New Price (₹)</label>
                         <input type="number" class="form-control" id="new_price" name="new_price" step="0.01" min="0" required>
                     </div>
                     

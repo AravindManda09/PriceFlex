@@ -113,11 +113,11 @@ function createPriceHistoryChart(priceHistory, competitorPrices) {
                 y: {
                     title: {
                         display: true,
-                        text: 'Price ($)'
+                        text: 'Price (₹)'
                     },
                     ticks: {
                         callback: function(value) {
-                            return '$' + value;
+                            return '₹' + value;
                         }
                     }
                 }
@@ -126,7 +126,7 @@ function createPriceHistoryChart(priceHistory, competitorPrices) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
+                            return context.dataset.label + ': ₹' + context.parsed.y.toFixed(2);
                         }
                     }
                 }
@@ -203,7 +203,7 @@ function createSalesChart(sales) {
                 y1: {
                     title: {
                         display: true,
-                        text: 'Revenue ($)'
+                        text: 'Revenue (₹)'
                     },
                     position: 'right',
                     grid: {
@@ -211,7 +211,7 @@ function createSalesChart(sales) {
                     },
                     ticks: {
                         callback: function(value) {
-                            return '$' + value;
+                            return '₹' + value;
                         }
                     }
                 }
@@ -221,7 +221,7 @@ function createSalesChart(sales) {
                     callbacks: {
                         label: function(context) {
                             if (context.dataset.label === 'Revenue') {
-                                return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
+                                return context.dataset.label + ': ₹' + context.parsed.y.toFixed(2);
                             }
                             return context.dataset.label + ': ' + context.parsed.y;
                         }

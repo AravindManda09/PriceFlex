@@ -32,10 +32,10 @@ const chartColors = {
 /**
  * Format currency for chart labels
  * @param {number} value - The value to format
- * @param {string} prefix - Currency prefix ($ by default)
+ * @param {string} prefix - Currency prefix (₹ by default)
  * @returns {string} Formatted currency string
  */
-function formatCurrency(value, prefix = '$') {
+function formatCurrency(value, prefix = '₹') {
     return prefix + value.toFixed(2);
 }
 

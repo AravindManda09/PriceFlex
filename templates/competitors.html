@@ -98,7 +98,7 @@
                                 {% for price in safe_comp.prices %}
                                 <tr>
                                     <td>{{ price.product_name }}</td>
-                                    <td>${{ price.price }}</td>
+                                    <td>₹{{ price.price }}</td>
                                     <td>{{ price.date_recorded.strftime('%Y-%m-%d') }}</td>
                                 </tr>
                                 {% endfor %}
@@ -141,7 +141,7 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="price{{ safe_comp.id }}" class="form-label">Price ($)</label>
+                            <label for="price{{ safe_comp.id }}" class="form-label">Price (₹)</label>
                             <input type="number" class="form-control" id="price{{ safe_comp.id }}" name="price" step="0.01" min="0" required>
                         </div>
                         

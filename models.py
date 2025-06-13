@@ -26,6 +26,7 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50))
     description = db.Column(db.Text)
+    image_url = db.Column(db.String(300))
     cost_price = db.Column(db.Float, nullable=False)
     current_price = db.Column(db.Float, nullable=False)
     minimum_price = db.Column(db.Float)

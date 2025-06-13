@@ -29,8 +29,8 @@
     <div class="col-md-3">
         <div class="card stat-card text-success mb-3">
             <div class="card-body">
-                <i class="fas fa-dollar-sign stat-icon"></i>
-                <div class="stat-value">${{ total_revenue|round(2) }}</div>
+                <i class="fas fa-indian-rupee-sign stat-icon"></i>
+                <div class="stat-value">₹{{ total_revenue|round(2) }}</div>
                 <div class="stat-label">Revenue (30d)</div>
             </div>
         </div>
@@ -39,7 +39,7 @@
         <div class="card stat-card text-info mb-3">
             <div class="card-body">
                 <i class="fas fa-tags stat-icon"></i>
-                <div class="stat-value">${{ avg_price|round(2) }}</div>
+                <div class="stat-value">₹{{ avg_price|round(2) }}</div>
                 <div class="stat-label">Avg Price</div>
             </div>
         </div>
@@ -116,16 +116,16 @@
                         <div class="d-flex justify-content-between mb-2">
                             <div>
                                 <small class="text-muted">Current:</small>
-                                <span class="ms-1">${{ rec.current_price }}</span>
+                                <span class="ms-1">₹{{ rec.current_price }}</span>
                             </div>
                             <div>
                                 <small class="text-muted">Recommended:</small>
-                                <span class="ms-1 price-change {{ 'price-increase' if is_increase else 'price-decrease' if is_decrease else '' }}">${{ rec.recommended_price }}</span>
+                                <span class="ms-1 price-change {{ 'price-increase' if is_increase else 'price-decrease' if is_decrease else '' }}">₹{{ rec.recommended_price }}</span>
                             </div>
                             <div>
                                 <small class="text-muted">Impact:</small>
                                 <span class="ms-1 {{ 'text-success' if rec.potential_revenue_increase > 0 else 'text-danger' }}">
-                                    ${{ rec.potential_revenue_increase|abs|round(2) }}
+                                    ₹{{ rec.potential_revenue_increase|abs|round(2) }}
                                 </span>
                             </div>
                         </div>
@@ -163,7 +163,7 @@
                                 <small class="text-muted">{{ product.category }}</small>
                             </div>
                             <div class="text-end">
-                                <div class="product-price">${{ product.current_price }}</div>
+                                <div class="product-price">₹{{ product.current_price }}</div>
                                 <small class="text-muted">Stock: {{ product.stock_level }}</small>
                             </div>
                         </div>

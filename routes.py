@@ -144,6 +144,7 @@ def register_routes(app):
             name = request.form.get('name')
             category = request.form.get('category')
             description = request.form.get('description')
+            image_url = request.form.get('image_url')
             cost_price = float(request.form.get('cost_price'))
             current_price = float(request.form.get('current_price'))
             minimum_price = request.form.get('minimum_price')
@@ -169,6 +170,7 @@ def register_routes(app):
                 name=name,
                 category=category,
                 description=description,
+                image_url=image_url,
                 cost_price=cost_price,
                 current_price=current_price,
                 minimum_price=minimum_price,

@@ -36,47 +36,53 @@
                             <input type="text" class="form-control" id="category" name="category">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="description" class="form-label">Description</label>
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                     </div>
-                    
+
+                    <div class="mb-3">
+                        <label for="image_url" class="form-label">Product Image URL</label>
+                        <input type="url" class="form-control" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+                        <div class="form-text">Provide a public URL of the product image.</div>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="cost_price" class="form-label">Cost Price ($)</label>
+                            <label for="cost_price" class="form-label">Cost Price (₹)</label>
                             <input type="number" class="form-control" id="cost_price" name="cost_price" step="0.01" min="0" required>
                             <div class="invalid-feedback">
                                 Please provide a valid cost price.
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="current_price" class="form-label">Current Price ($)</label>
+                            <label for="current_price" class="form-label">Current Price (₹)</label>
                             <input type="number" class="form-control" id="current_price" name="current_price" step="0.01" min="0" required>
                             <div class="invalid-feedback">
                                 Please provide a valid current price.
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="minimum_price" class="form-label">Minimum Price ($) <small class="text-muted">(Optional)</small></label>
+                            <label for="minimum_price" class="form-label">Minimum Price (₹) <small class="text-muted">(Optional)</small></label>
                             <input type="number" class="form-control" id="minimum_price" name="minimum_price" step="0.01" min="0">
                             <div class="form-text">The lowest price you're willing to sell this product for.</div>
                         </div>
                         <div class="col-md-6">
-                            <label for="maximum_price" class="form-label">Maximum Price ($) <small class="text-muted">(Optional)</small></label>
+                            <label for="maximum_price" class="form-label">Maximum Price (₹) <small class="text-muted">(Optional)</small></label>
                             <input type="number" class="form-control" id="maximum_price" name="maximum_price" step="0.01" min="0">
                             <div class="form-text">The highest price you're willing to sell this product for.</div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="stock_level" class="form-label">Current Stock Level</label>
                         <input type="number" class="form-control" id="stock_level" name="stock_level" min="0">
                     </div>
-                    
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('products') }}" class="btn btn-outline-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Add Product</button>
@@ -93,14 +99,17 @@
     {% for product in products %}
     <div class="col-md-6 col-xl-4 mb-4">
         <div class="card product-card h-100">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid product-image-top">
+            {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ product.name }}</h5>
                 <div class="product-meta">{{ product.category }}</div>
-                
+
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div>
-                        <div class="product-price">${{ product.current_price }}</div>
-                        <div class="text-muted small">Cost: ${{ product.cost_price }}</div>
+                        <div class="product-price">₹{{ product.current_price }}</div>
+                        <div class="text-muted small">Cost: ₹{{ product.cost_price }}</div>
                     </div>
                     <div class="text-end">
                         <div class="badge {{ 'bg-success' if product.stock_level > 10 else 'bg-warning' if product.stock_level > 0 else 'bg-danger' }}">
@@ -108,11 +117,11 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {% if product.description %}
                 <p class="card-text mt-3">{{ product.description|truncate(100) }}</p>
                 {% endif %}
-                
+
                 <div class="d-flex justify-content-between mt-3">
                     <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-chart-line me-1"></i> Analytics
